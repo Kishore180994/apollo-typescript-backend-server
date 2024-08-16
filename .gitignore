@@ -1,0 +1,12 @@
+# Node modules
+node_modules/
+
+# TypeScript compiled files
+dist/
+
+# Logs
+*.log
+
+# OS and IDE specific files
+.DS_Store
+.vscode/
