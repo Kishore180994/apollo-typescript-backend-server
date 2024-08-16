@@ -36,10 +36,10 @@ Before you begin, ensure you have the following installed on your local machine:
 
 Clone this repository to your local machine using Git:
 
-\`\`\`bash
+```bash
 git clone https://github.com/your-username/backend-template.git
 cd backend-template
-\`\`\`
+```
 
 ### 2. Install Dependencies
 
