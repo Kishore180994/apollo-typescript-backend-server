@@ -1,6 +1,14 @@
+import { Match } from "./entities/Match.js";
+import { CareerStats } from "./entities/CareerStats.js";
 import { DataSource } from "typeorm";
-import { Embedding } from "./entities/Embedding.js";
 import dotenv from "dotenv";
+import { Player } from "./entities/Player.js";
+import { BattingStats } from "./entities/BattingStats.js";
+import { BowlingStats } from "./entities/BowlingStats.js";
+import { FieldingStats } from "./entities/FieldingStats.js";
+import { Team } from "./entities/Team.js";
+import { Group } from "./entities/Group.js";
+import { MatchPerformance } from "./entities/MatchPerformance.js";
 
 dotenv.config(); // Load environment variables from .env file
 
@@ -13,7 +21,18 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME,
   synchronize: true,
   logging: false,
-  entities: [Embedding],
+  entities: [
+    Player,
+    Match,
+    CareerStats,
+    BattingStats,
+    BowlingStats,
+    FieldingStats,
+    MatchPerformance,
+    Team,
+    Player,
+    Group,
+  ],
 });
 
 AppDataSource.initialize()
