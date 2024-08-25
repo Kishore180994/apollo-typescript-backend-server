@@ -1,74 +1,51 @@
-import { Resolver, Query, Mutation, Arg, ID } from "type-graphql";
-import { Team } from "../entities/Team.js";
-import { Player } from "../entities/Player.js";
-import { Repository } from "typeorm";
-import { TeamInput } from "../inputs/TeamInput.js";
-import { UpdateTeamInput } from "../inputs/UpdateTeamInput.js";
+import { Resolver, Query, Mutation, Arg } from "type-graphql";
 import { AppDataSource } from "../ormconfig.js";
+import { Team } from "../entities/Team.js";
 
 @Resolver(Team)
 export class TeamResolver {
-  private teamRepository: Repository<Team>;
-  private playerRepository: Repository<Player>;
-
-  constructor() {
-    this.teamRepository = AppDataSource.getRepository(Team);
-    this.playerRepository = AppDataSource.getRepository(Player);
-  }
+  private teamRepository = AppDataSource.getRepository(Team);
 
   @Query(() => [Team])
-  async teams(): Promise<Team[]> {
-    return this.teamRepository.find({ relations: ["match", "players"] });
+  async getTeams(): Promise<Team[]> {
+    return this.teamRepository.find({
+      relations: ["players", "matches"],
+    });
   }
 
   @Query(() => Team, { nullable: true })
-  async team(@Arg("id", () => ID) id: string): Promise<Team | null> {
+  async getTeamById(@Arg("id") id: string): Promise<Team | null> {
     return this.teamRepository.findOne({
       where: { id },
-      relations: ["match", "players"],
+      relations: ["players", "matches"],
     });
   }
 
   @Mutation(() => Team)
-  async createTeam(@Arg("data") data: TeamInput): Promise<Team> {
-    const players = data.playerIds
-      ? await this.playerRepository.findByIds(data.playerIds)
-      : [];
-
+  async createTeam(@Arg("name") name: string): Promise<Team> {
     const team = this.teamRepository.create({
-      ...data,
-      players,
+      name,
     });
 
     return this.teamRepository.save(team);
   }
 
-  @Mutation(() => Team)
+  @Mutation(() => Team, { nullable: true })
   async updateTeam(
-    @Arg("id", () => ID) id: string,
-    @Arg("data") data: UpdateTeamInput
-  ): Promise<Team | undefined> {
-    const team = await this.teamRepository.findOne({
-      where: { id },
-      relations: ["match", "players"],
-    });
+    @Arg("id") id: string,
+    @Arg("name", { nullable: true }) name?: string
+  ): Promise<Team | null> {
+    const team = await this.teamRepository.findOne({ where: { id } });
+    if (!team) return null;
 
-    if (!team) {
-      throw new Error("Team not found");
-    }
-
-    if (data.playerIds) {
-      team.players = await this.playerRepository.findByIds(data.playerIds);
-    }
-
-    Object.assign(team, data);
+    if (name !== undefined) team.name = name;
 
     return this.teamRepository.save(team);
   }
 
   @Mutation(() => Boolean)
-  async deleteTeam(@Arg("id", () => ID) id: string): Promise<boolean> {
+  async deleteTeam(@Arg("id") id: string): Promise<boolean> {
     const result = await this.teamRepository.delete(id);
-    return result.affected !== 0;
+    return result.affected === 1;
   }
 }

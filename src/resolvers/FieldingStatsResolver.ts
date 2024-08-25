@@ -1,25 +1,21 @@
-import { Resolver, Query, Mutation, Arg, ID } from "type-graphql";
-import { FieldingStats } from "../entities/FieldingStats.js";
-import { Repository } from "typeorm";
+import { Resolver, Query, Mutation, Arg } from "type-graphql";
 import { AppDataSource } from "../ormconfig.js";
-import { FieldingStatsInput } from "../inputs/FieldingStatsInput.js";
+import { FieldingStats } from "../entities/FieldingStats.js";
+import { CareerStats } from "../entities/CareerStats.js";
 
 @Resolver(FieldingStats)
 export class FieldingStatsResolver {
-  private fieldingStatsRepository: Repository<FieldingStats>;
-
-  constructor() {
-    this.fieldingStatsRepository = AppDataSource.getRepository(FieldingStats);
-  }
+  private fieldingStatsRepository = AppDataSource.getRepository(FieldingStats);
+  private careerStatsRepository = AppDataSource.getRepository(CareerStats);
 
   @Query(() => [FieldingStats])
-  async fieldingStats(): Promise<FieldingStats[]> {
-    return this.fieldingStatsRepository.find({ relations: ["careerStats"] });
+  async getFieldingStats(): Promise<FieldingStats[]> {
+    return this.fieldingStatsRepository.find();
   }
 
   @Query(() => FieldingStats, { nullable: true })
-  async fieldingStat(
-    @Arg("id", () => ID) id: string
+  async getFieldingStatById(
+    @Arg("id") id: string
   ): Promise<FieldingStats | null> {
     return this.fieldingStatsRepository.findOne({
       where: { id },
@@ -28,22 +24,49 @@ export class FieldingStatsResolver {
   }
 
   @Mutation(() => FieldingStats)
-  async createFieldingStats(
-    @Arg("data") data: FieldingStatsInput
+  async createFieldingStat(
+    @Arg("catches") catches: number,
+    @Arg("runOuts") runOuts: number,
+    @Arg("stumpings") stumpings: number,
+    @Arg("careerStatsId") careerStatsId: string
   ): Promise<FieldingStats> {
-    // Create a new FieldingStats entry, linking it to the existing CareerStats by reference
-    const fieldingStats = this.fieldingStatsRepository.create({
-      catches: data.catches,
-      runOuts: data.runOuts,
-      stumpings: data.stumpings,
+    const careerStats = await this.careerStatsRepository.findOne({
+      where: { id: careerStatsId },
+    });
+    if (!careerStats) throw new Error("CareerStats not found");
+
+    const fieldingStat = this.fieldingStatsRepository.create({
+      catches,
+      runOuts,
+      stumpings,
+      careerStats, // Relating this fielding stat with the CareerStats entity
     });
 
-    return this.fieldingStatsRepository.save(fieldingStats);
+    return this.fieldingStatsRepository.save(fieldingStat);
+  }
+
+  @Mutation(() => FieldingStats, { nullable: true })
+  async updateFieldingStat(
+    @Arg("id") id: string,
+    @Arg("catches", { nullable: true }) catches?: number,
+    @Arg("runOuts", { nullable: true }) runOuts?: number,
+    @Arg("stumpings", { nullable: true }) stumpings?: number
+  ): Promise<FieldingStats | null> {
+    const fieldingStat = await this.fieldingStatsRepository.findOne({
+      where: { id },
+    });
+    if (!fieldingStat) return null;
+
+    if (catches !== undefined) fieldingStat.catches = catches;
+    if (runOuts !== undefined) fieldingStat.runOuts = runOuts;
+    if (stumpings !== undefined) fieldingStat.stumpings = stumpings;
+
+    return this.fieldingStatsRepository.save(fieldingStat);
   }
 
   @Mutation(() => Boolean)
-  async deleteFieldingStats(@Arg("id", () => ID) id: string): Promise<boolean> {
+  async deleteFieldingStat(@Arg("id") id: string): Promise<boolean> {
     const result = await this.fieldingStatsRepository.delete(id);
-    return result.affected !== 0;
+    return result.affected === 1;
   }
 }

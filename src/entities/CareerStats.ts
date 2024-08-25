@@ -22,7 +22,6 @@ export class CareerStats {
   @Column({ default: 0 })
   matches!: number;
 
-  // You might want to add more aggregate fields here, such as:
   @Field(() => Int)
   @Column({ default: 0 })
   totalRuns!: number;
@@ -32,32 +31,24 @@ export class CareerStats {
   totalWickets!: number;
 
   // Relationships
-
-  @OneToMany(
-    (_type) => BattingStats,
-    (battingStats) => battingStats.careerStats,
-    {
-      lazy: true,
-      cascade: ["insert"],
-    }
-  )
+  @OneToMany(() => BattingStats, (battingStats) => battingStats.careerStats, {
+    lazy: true,
+    cascade: ["insert"],
+  })
   battingStats!: BattingStats[] | Promise<BattingStats[]>;
 
-  @OneToMany(
-    (_type) => BowlingStats,
-    (bowlingStats) => bowlingStats.careerStats,
-    {
-      lazy: true,
-      cascade: ["insert"],
-    }
-  )
+  @OneToMany(() => BowlingStats, (bowlingStats) => bowlingStats.careerStats, {
+    lazy: true,
+    cascade: ["insert"],
+  })
   bowlingStats!: BowlingStats[] | Promise<BowlingStats[]>;
 
-  @OneToOne((_type) => Player, (player) => player.careerStats, { lazy: true })
+  @Field(() => Player) // Correctly expose this field for GraphQL schema
+  @OneToOne(() => Player, (player) => player.careerStats, { lazy: true })
   player!: Player | Promise<Player>;
 
   @OneToMany(
-    (_type) => FieldingStats,
+    () => FieldingStats,
     (fieldingStats) => fieldingStats.careerStats,
     { lazy: true, cascade: ["insert"] }
   )

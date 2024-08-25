@@ -29,18 +29,6 @@ export class BowlingStats {
   @Column({ default: 0 })
   wickets!: number;
 
-  @Field(() => Int, { nullable: true })
-  @Column({ default: 0 })
-  bestBowlingWickets!: number;
-
-  @Field(() => Int)
-  @Column({ default: 0 })
-  bestBowlingRuns!: number;
-
-  @Field(() => Int, { nullable: true })
-  @Column({ default: 0 })
-  fiveWicketHauls!: number;
-
   @ManyToOne(
     (_type) => CareerStats,
     (careerStats) => careerStats.bowlingStats,

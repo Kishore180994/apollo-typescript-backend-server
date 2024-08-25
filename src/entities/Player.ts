@@ -4,6 +4,8 @@ import {
   Column,
   ManyToMany,
   OneToMany,
+  OneToOne,
+  JoinColumn,
 } from "typeorm";
 import { ObjectType, Field, ID, registerEnumType } from "type-graphql";
 import { BattingStyle, PlayerRole } from "./../types/types.js";
@@ -58,16 +60,21 @@ export class Player {
   )
   performances!: MatchPerformance[] | Promise<MatchPerformance[]>;
 
-  @OneToMany(
-    () => CareerStats,
-    (careerStats: CareerStats) => careerStats.player,
-    { lazy: true }
-  )
-  careerStats!: CareerStats[] | Promise<CareerStats[]>;
-
+  @Field(() => [Group])
   @ManyToMany(() => Group, (group) => group.players, { lazy: true })
-  groups!: Group[] | Promise<Group[]>;
+  groups: Group[] | Promise<Group[]> = [];
+
+  @Field(() => CareerStats) // Ensure correct usage for GraphQL schema
+  @OneToOne(() => CareerStats, (careerStats) => careerStats.player, {
+    lazy: true,
+  })
+  @JoinColumn()
+  careerStats!: CareerStats | Promise<CareerStats>;
 
   @ManyToMany(() => Team, (team) => team.players, { lazy: true })
   teams!: Team[] | Promise<Team[]>;
+
+  constructor() {
+    this.groups = [];
+  }
 }

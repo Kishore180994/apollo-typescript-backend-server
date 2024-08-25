@@ -5,9 +5,14 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "compile": "tsc",
-    "postbuild": "node scripts/postbuild.js",
-    "start": "npm run compile && node dist/index.js"
+    "build": "tsc",
+    "start": "nodemon --watch './src/' --ext 'ts,json' --exec 'node --loader ts-node/esm ./src/index.ts'",
+    "dev": "npm run build && npm start",
+    "typeorm": "typeorm-ts-node-commonjs",
+    "migration:create": "npx typeorm migration:create ./src/migrations/schema-update",
+    "migration:generate": "npx ts-node ./node_modules/.bin/typeorm -d dist/ormconfig.js migration:generate ./src/migrations/schema-update",
+    "migration:run": "npx typeorm-ts-node-commonjs migration:run -d ./dist/ormconfig.js",
+    "migration:revert": "npx typeorm-ts-node-commonjs migration:revert -d ./src/ormconfig.ts"
   },
   "author": "",
   "license": "ISC",
@@ -21,14 +26,17 @@
     "graphql-scalars": "^1.23.0",
     "pg": "^8.6.0",
     "reflect-metadata": "^0.2.2",
-    "type-graphql": "^2.0.0-rc.2",
-    "typeorm": "^0.3.20"
+    "type-graphql": "^2.0.0-rc.2"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/node": "^22.3.0",
+    "nodemon": "^3.1.4",
     "replace-in-file": "^8.1.0",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typeorm": "^0.3.20",
     "typescript": "^5.5.4"
   }
 }

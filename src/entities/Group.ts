@@ -4,10 +4,12 @@ import {
   Column,
   ManyToMany,
   OneToMany,
+  JoinTable,
 } from "typeorm";
 import { ObjectType, Field, ID } from "type-graphql";
 import { Player } from "./Player.js";
 import { Match } from "./Match.js";
+import { Team } from "./Team.js";
 
 @ObjectType()
 @Entity()
@@ -20,7 +22,11 @@ export class Group {
   @Column()
   name!: string;
 
+  @OneToMany(() => Team, (team) => team.group, { lazy: true })
+  teams!: Team[] | Promise<Team[]>;
+
   @ManyToMany(() => Player, (player) => player.groups, { lazy: true })
+  @JoinTable()
   players!: Player[] | Promise<Player[]>;
 
   @OneToMany(() => Match, (match) => match.group, { lazy: true })
