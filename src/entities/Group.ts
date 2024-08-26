@@ -25,6 +25,7 @@ export class Group {
   @OneToMany(() => Team, (team) => team.group, { lazy: true })
   teams!: Team[] | Promise<Team[]>;
 
+  @Field(() => [Player])
   @ManyToMany(() => Player, (player) => player.groups, { lazy: true })
   @JoinTable()
   players!: Player[] | Promise<Player[]>;

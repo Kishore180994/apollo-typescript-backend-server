@@ -2,7 +2,7 @@ import { Resolver, Query, Mutation, Arg } from "type-graphql";
 import { AppDataSource } from "../ormconfig.js";
 import { Player } from "../entities/Player.js";
 import { Group } from "../entities/Group.js";
-import { PlayerRole, BattingStyle } from "../types/types.js";
+import { PlayerRole, BattingStyle, BowlingStyle } from "../types/types.js";
 
 @Resolver(Player)
 export class PlayerResolver {
@@ -30,7 +30,8 @@ export class PlayerResolver {
     @Arg("role", () => PlayerRole) role: PlayerRole,
     @Arg("battingStyle", () => BattingStyle) battingStyle: BattingStyle,
     @Arg("groupId") groupId: string, // Required argument for the group ID
-    @Arg("bowlingStyle", { nullable: true }) bowlingStyle?: string
+    @Arg("bowlingStyle", () => BowlingStyle, { nullable: true })
+    bowlingStyle?: BowlingStyle
   ): Promise<Player> {
     // Find the group by the provided ID
     const group = await this.groupRepository.findOne({
@@ -78,7 +79,8 @@ export class PlayerResolver {
     @Arg("role", () => PlayerRole, { nullable: true }) role?: PlayerRole,
     @Arg("battingStyle", () => BattingStyle, { nullable: true })
     battingStyle?: BattingStyle,
-    @Arg("bowlingStyle", { nullable: true }) bowlingStyle?: string
+    @Arg("bowlingStyle", () => BowlingStyle, { nullable: true })
+    bowlingStyle?: BowlingStyle
   ): Promise<Player | null> {
     const player = await this.playerRepository.findOne({ where: { id } });
     if (!player) return null;
